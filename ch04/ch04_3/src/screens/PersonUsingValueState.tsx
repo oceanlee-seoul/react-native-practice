@@ -1,11 +1,12 @@
 import React, {FC} from 'react';
+import {useCallback, useState} from 'react';
 import {View, Text, Image, Alert} from 'react-native';
 import {MD2Colors} from 'react-native-paper';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import * as D from '../';
+import * as D from '../data';
 import {styles} from './Person.style';
 import moment from 'moment-with-locales-es6';
-import {Avatar, IconText} from '../../components';
+import {Avatar, IconText} from '../components';
 
 moment.locale('ko');
 
@@ -13,28 +14,40 @@ export type PersonProps = {
   person: D.IPerson;
 };
 
-const avatarPressed = () => Alert.alert('avatar pressed.');
-const deletePressed = () => Alert.alert('delete pressed.');
-const countIconPressed = (name: string) => () =>
-  Alert.alert(`${name} pressed.`);
+const PersonUsingValueState: FC<PersonProps> = ({person: initialPerson}) => {
+  const avatarPressed = useCallback(() => Alert.alert('avatar pressed.'), []);
+  const deletePressed = useCallback(() => Alert.alert('delete pressed.'), []);
 
-const Person: FC<PersonProps> = ({person}) => {
+  const [comment, setComment] = useState<number>(0);
+  const [retweet, setRetweet] = useState<number>(0);
+  const [heart, setHeart] = useState<number>(0);
+
+  const commentPressed = useCallback(
+    () => setComment(comment => comment + 1),
+    [],
+  );
+  const retweetPressed = useCallback(
+    () => setRetweet(retweet => retweet + 1),
+    [],
+  );
+  const heartPressed = useCallback(() => setHeart(heart => heart + 1), []);
+
   return (
     <View style={[styles.view]}>
       <View style={[styles.leftView]}>
         <Avatar
           imageStyle={[styles.avatar]}
-          uri={person.avatar}
+          uri={initialPerson.avatar}
           size={50}
           onPress={avatarPressed}
         />
       </View>
       <View style={[styles.rightView]}>
-        <Text style={[styles.name]}>{person.name}</Text>
-        <Text style={[styles.email]}>{person.email}</Text>
+        <Text style={[styles.name]}>{initialPerson.name}</Text>
+        <Text style={[styles.email]}>{initialPerson.email}</Text>
         <View style={[styles.dateView]}>
           <Text style={[styles.text]}>
-            {moment(person.createdDate).startOf('day').fromNow()}
+            {moment(initialPerson.createdDate).startOf('day').fromNow()}
           </Text>
           <Icon
             name="trash-can-outline"
@@ -46,40 +59,40 @@ const Person: FC<PersonProps> = ({person}) => {
           numberOfLines={3}
           ellipsizeMode="tail"
           style={[styles.text, styles.comments]}>
-          {person.comments}
+          {initialPerson.comments}
         </Text>
-        <Image style={[styles.image]} source={{uri: person.image}} />
+        <Image style={[styles.image]} source={{uri: initialPerson.image}} />
         <View style={[styles.countsView]}>
           <IconText
             viewStyle={[styles.touchableIcon]}
-            onPress={countIconPressed('comment')}
+            onPress={commentPressed}
             name={'comment'}
             size={24}
             color={MD2Colors.blue500}
             textStyle={[styles.iconText]}
-            text={person.counts.comment}
+            text={comment}
           />
           <IconText
             viewStyle={[styles.touchableIcon]}
-            onPress={countIconPressed('retweet')}
+            onPress={retweetPressed}
             name={'twitter'}
             size={24}
             color={MD2Colors.purple500}
             textStyle={[styles.iconText]}
-            text={person.counts.retweet}
+            text={retweet}
           />
           <IconText
             viewStyle={[styles.touchableIcon]}
-            onPress={countIconPressed('heart')}
+            onPress={heartPressed}
             name={'heart'}
             size={24}
             color={MD2Colors.red500}
             textStyle={[styles.iconText]}
-            text={person.counts.heart}
+            text={heart}
           />
         </View>
       </View>
     </View>
   );
 };
-export default Person;
+export default PersonUsingValueState;
